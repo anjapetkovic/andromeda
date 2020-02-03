@@ -255,6 +255,7 @@ let extract_meta metas abstr =
                metas, Patt.ArgumentIsType (Patt.TypeAddMeta m)
 
           | Nucleus_types.(TypeMeta (MetaFree _, _) | TypeConstructor _) ->
+            Format.printf "my little bug @";
              raise Form_fail
           end
 
@@ -271,10 +272,12 @@ let extract_meta metas abstr =
 let rec form_is_type metas = function
 
   | Nucleus_types.TypeConstructor (c, args) ->
+       (* Format.printf "constructor @"; *)
      let metas, args = form_arguments metas args in
      metas, Patt.(TypeNormal (TypeConstructor (c, args)))
 
   | Nucleus_types.(TypeMeta (MetaBound i, [])) ->
+       (* Format.printf "meta bound@"; *)
      if Bound_set.mem i metas then
        metas, Patt.TypeCheckMeta i
      else
@@ -282,6 +285,7 @@ let rec form_is_type metas = function
        metas, Patt.TypeAddMeta i
 
   | Nucleus_types.(TypeMeta (MetaFree {meta_nonce=n;_}, es)) ->
+    (* Format.printf "meta free @"; *)
      let rec fold metas es_out = function
 
        | [] ->
@@ -387,6 +391,7 @@ let is_range s k =
    a beta or extensionality rule. *)
 let make_is_type k t =
   try
+   (* Format.printf "wiii"; *)
     let metas, patt = form_is_type Bound_set.empty t in
     if is_range metas k then
       Some (patt, k)

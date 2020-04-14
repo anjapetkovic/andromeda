@@ -3,7 +3,7 @@
 open Eqchk_common
 
 (** Extract an optional value, or declare an equality failure *)
-let deopt x msg = 
+let deopt x msg =
   match x with
   | None -> raise (Normalization_fail msg)
   | Some x -> x
@@ -216,11 +216,15 @@ and normalize_heads_type ~strong sgn nrm ty0 =
      let heads = get_type_heads nrm (Ident s) in
      let args_eq_args', Normal args' = normalize_arguments ~strong sgn nrm heads args in
      let ty1 =
-       let jdg1 = deopt (rap_fully_apply (Nucleus.form_constructor_rap sgn s) args') "cannot apply arguments to type constructor" in
-       deopt (Nucleus.as_is_type jdg1) "application of the constructor did not result in type judgement" in
+       let jdg1 = deopt (rap_fully_apply (Nucleus.form_constructor_rap sgn s) args')
+                  "cannot apply arguments to type constructor" in
+       deopt (Nucleus.as_is_type jdg1)
+       "application of the constructor did not result in type judgement" in
      let ty0_eq_ty1 =
-       let rap = deopt (Nucleus.congruence_is_type sgn ty0 ty1) "unable to construct a type congruence rule" in
-       deopt (rap_fully_apply rap args_eq_args') "unable to apply the type congruence rule to arguments"
+       let rap = deopt (Nucleus.congruence_is_type sgn ty0 ty1)
+       "unable to construct a type congruence rule" in
+       deopt (rap_fully_apply rap args_eq_args')
+       "unable to apply the type congruence rule to arguments"
      in
      ty0_eq_ty1, Normal ty1
 
@@ -230,12 +234,16 @@ and normalize_heads_type ~strong sgn nrm ty0 =
      let es' = List.map (fun e -> Nucleus.(abstract_not_abstract (JudgementIsTerm e))) es'
      and es_eq_es' = List.map (fun eq -> Nucleus.(abstract_not_abstract (JudgementEqTerm eq))) es_eq_es' in
      let ty1 =
-       let jdg1 = deopt (rap_fully_apply (Nucleus.form_meta_rap sgn mv) es') "cannot apply arguments to type metavariable" in
-       deopt (Nucleus.as_is_type jdg1) "application of the type matavariable did not result in type judgement" 
+       let jdg1 = deopt (rap_fully_apply (Nucleus.form_meta_rap sgn mv) es')
+                  "cannot apply arguments to type metavariable" in
+       deopt (Nucleus.as_is_type jdg1)
+       "application of the type matavariable did not result in type judgement"
      in
      let ty0_eq_ty1 =
-       let rap = deopt (Nucleus.congruence_is_type sgn ty0 ty1)  "unable to construct a type congruence rule" in
-       deopt (rap_fully_apply rap es_eq_es') "unable to apply the type congruence rule to arguments"
+       let rap = deopt (Nucleus.congruence_is_type sgn ty0 ty1)
+                 "unable to construct a type congruence rule" in
+       deopt (rap_fully_apply rap es_eq_es')
+       "unable to apply the type congruence rule to arguments"
      in
      ty0_eq_ty1, Normal ty1
 
@@ -249,11 +257,15 @@ and normalize_heads_term ~strong sgn nrm e0 =
      let heads = get_term_heads nrm (Ident s) in
      let args_eq_args', Normal args' = normalize_arguments ~strong sgn nrm heads args in
      let e1 =
-       let jdg1 = deopt (rap_fully_apply (Nucleus.form_constructor_rap sgn s) args') "cannot apply arguments to term constructor" in
-       deopt (Nucleus.as_is_term jdg1) "application of the term constructor did not result in term judgement" in
+       let jdg1 = deopt (rap_fully_apply (Nucleus.form_constructor_rap sgn s) args')
+           "cannot apply arguments to term constructor" in
+       deopt (Nucleus.as_is_term jdg1)
+       "application of the term constructor did not result in term judgement" in
      let e0_eq_e1 =
-       let rap = deopt (Nucleus.congruence_is_term sgn e0 e1) "unable to construct a term congruence rule" in
-       deopt (rap_fully_apply rap args_eq_args') "unable to apply the term congruence rule to arguments"
+       let rap = deopt (Nucleus.congruence_is_term sgn e0 e1)
+                 "unable to construct a term congruence rule" in
+       deopt (rap_fully_apply rap args_eq_args')
+       "unable to apply the term congruence rule to arguments"
      in
      e0_eq_e1, Normal e1
 
@@ -263,12 +275,16 @@ and normalize_heads_term ~strong sgn nrm e0 =
      let es' = List.map (fun e -> Nucleus.(abstract_not_abstract (JudgementIsTerm e))) es'
      and es_eq_es' = List.map (fun eq -> Nucleus.(abstract_not_abstract (JudgementEqTerm eq))) es_eq_es' in
      let e1 =
-       let jdg1 = deopt (rap_fully_apply (Nucleus.form_meta_rap sgn mv) es') "cannot apply arguments to term metavariable" in
-       deopt (Nucleus.as_is_term jdg1) "application of the type matavariable did not result in term judgement"
+       let jdg1 = deopt (rap_fully_apply (Nucleus.form_meta_rap sgn mv) es')
+                  "cannot apply arguments to term metavariable" in
+       deopt (Nucleus.as_is_term jdg1)
+       "application of the type matavariable did not result in term judgement"
      in
      let e0_eq_e1 =
-       let rap = deopt (Nucleus.congruence_is_term sgn e0 e1) "unable to construct a term congruence rule" in
-       deopt (rap_fully_apply rap es_eq_es') "unable to apply the term congruence rule to arguments"
+       let rap = deopt (Nucleus.congruence_is_term sgn e0 e1)
+       "unable to construct a term congruence rule" in
+       deopt (rap_fully_apply rap es_eq_es')
+       "unable to apply the term congruence rule to arguments"
      in
      e0_eq_e1, Normal e1
 

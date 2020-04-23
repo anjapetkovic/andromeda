@@ -1,6 +1,6 @@
 (** Type-directed equality checking based on user-provided rules. *)
 
-open Eqchk_common
+include Eqchk_common
 
 (** Types and functions for manipulation of rules. *)
 
@@ -107,7 +107,7 @@ and prove_eq_term ~ext chk sgn bdry =
     normalization_phase bdry
   else
     match Eqchk_extensionality.find chk.ext_rules sgn bdry with
-    
+
     | Some rap ->
        (* reduce the problem to an application of an extensionality rule *)
        resolve_rap chk sgn IntSet.empty rap
@@ -118,7 +118,7 @@ and prove_eq_term ~ext chk sgn bdry =
 and check_normal_type chk sgn (Normal ty1) (Normal ty2) =
   match Nucleus.congruence_is_type sgn ty1 ty2 with
 
-  | None -> raise (Equality_fail ("cannot find a congruence rule for given types") )
+  | None -> raise (EqchkError(Equality_fail ("cannot find a congruence rule for given types") ))
 
   | Some rap ->
      let sym = head_symbol_type (Nucleus.expose_is_type ty1) in
@@ -129,7 +129,7 @@ and check_normal_type chk sgn (Normal ty1) (Normal ty2) =
 and check_normal_term chk sgn (Normal e1) (Normal e2) =
   match Nucleus.congruence_is_term sgn e1 e2 with
 
-  | None -> raise (Equality_fail "cannot find a congruence rule for given terms")
+  | None -> raise (EqchkError (Equality_fail "cannot find a congruence rule for given terms"))
 
   | Some rap ->
      let sym = head_symbol_term (Nucleus.expose_is_term e1) in
@@ -202,7 +202,7 @@ let add ~quiet ~penv chk drv =
       chk
 
   with
-    | Invalid_rule _ ->
+    | EqchkError ( Invalid_rule _ )->
       try
         begin match add_type_computation' chk drv with
 
@@ -218,7 +218,7 @@ let add ~quiet ~penv chk drv =
         end
 
      with
-      | Invalid_rule _ ->
+      | EqchkError (Invalid_rule _) ->
           begin match add_term_computation' chk drv with
             | (sym, ((patt, _), _), chk) ->
               let heads = heads_term patt in

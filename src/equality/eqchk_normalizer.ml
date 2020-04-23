@@ -5,7 +5,7 @@ open Eqchk_common
 (** Extract an optional value, or declare an equality failure *)
 let deopt x msg =
   match x with
-  | None -> raise (Normalization_fail msg)
+  | None -> raise (EqchkError (Normalization_fail msg))
   | Some x -> x
 
 (** The types of beta rules. *)
@@ -42,16 +42,16 @@ let make_type_computation drv =
        let s = head_symbol_type t1 in
        (s, patt)
 
-    | Nucleus_types.(Premise ({meta_boundary=bdry;_}, drv)) ->
+    | Nucleus_types.(Premise ({meta_boundary=bdry;_} as premise, drv)) ->
        if is_object_premise bdry then
          fold (k+1) drv
        else
-         raise (Invalid_rule "premise of a computation rule does not have an object boundary")
+         raise (EqchkError (Invalid_rule (ObjectBoundaryExpected(premise, bdry))))
   in
   let drv =
     match Nucleus.as_eq_type_rule drv with
     | Some drv -> drv
-    | None -> raise (Invalid_rule "Conclusion not a type equality boundary")
+    | None -> raise (EqchkError (Invalid_rule TypeEqualityConclusionExpected))
   in
   let (s, patt) = fold 0 (Nucleus.expose_rule drv) in
   s, (patt, drv)
@@ -66,16 +66,16 @@ let make_term_computation drv =
        let s = head_symbol_term e1 in
        (s, patt)
 
-    | Nucleus_types.(Premise ({meta_boundary=bdry;_}, drv)) ->
+    | Nucleus_types.(Premise ({meta_boundary=bdry;_} as p, drv)) ->
        if is_object_premise bdry then
          fold (k+1) drv
        else
-         raise (Invalid_rule "premise of a computation rule does not have an object boundary")
+         raise (EqchkError (Invalid_rule (ObjectBoundaryExpected(p, bdry))))
   in
   let drv =
     match Nucleus.as_eq_term_rule drv with
     | Some drv -> drv
-    | None -> raise (Invalid_rule "Conclusion not a term equality boundary")
+    | None -> raise (EqchkError (Invalid_rule TermEqualityConclusionExpected))
   in
   let (s, patt) = fold 0 (Nucleus.expose_rule drv) in
   s, (patt, drv)
@@ -336,7 +336,7 @@ and normalize_argument ~strong sgn nrm arg =
      Normal (Nucleus.(abstract_not_abstract (JudgementIsTerm e')))
 
   | Nucleus.(Stump_NotAbstract (JudgementEqType _ | JudgementEqTerm _)) ->
-     raise (Normalization_fail "cannot normalize equality judgements")
+     raise (EqchkError (Normalization_fail "cannot normalize equality judgements"))
 
 and normalize_is_terms ~strong sgn nrm heads es =
   let rec fold k es' es_eq_es' = function

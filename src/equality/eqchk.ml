@@ -1,6 +1,6 @@
 (** Type-directed equality checking based on user-provided rules. *)
 
-include Eqchk_common
+open Eqchk_common
 
 (** Types and functions for manipulation of rules. *)
 
@@ -118,7 +118,7 @@ and prove_eq_term ~ext chk sgn bdry =
 and check_normal_type chk sgn (Normal ty1) (Normal ty2) =
   match Nucleus.congruence_is_type sgn ty1 ty2 with
 
-  | None -> raise (EqchkError(Equality_fail ("cannot find a congruence rule for given types") ))
+  | None -> raise (EqchkError(Equality_fail (NoCongruenceTypes (ty1, ty2)) ))
 
   | Some rap ->
      let sym = head_symbol_type (Nucleus.expose_is_type ty1) in
@@ -129,7 +129,7 @@ and check_normal_type chk sgn (Normal ty1) (Normal ty2) =
 and check_normal_term chk sgn (Normal e1) (Normal e2) =
   match Nucleus.congruence_is_term sgn e1 e2 with
 
-  | None -> raise (EqchkError (Equality_fail "cannot find a congruence rule for given terms"))
+  | None -> raise (EqchkError (Equality_fail (NoCongruenceTerms (e1, e2))))
 
   | Some rap ->
      let sym = head_symbol_term (Nucleus.expose_is_term e1) in
@@ -170,7 +170,7 @@ and prove_boundary_abstraction ~ext chk sgn bdry =
      Nucleus.abstract_judgement atm eq_abstr
 
   | Nucleus.(Stump_NotAbstract (BoundaryIsTerm _ | BoundaryIsType _)) ->
-     raise (Fatal_error "cannot prove an object boundary")
+     raise (Fatal_error (Fatal "cannot prove an object boundary"))
 
   in
   prove bdry

@@ -39,9 +39,9 @@ val normalize_type :
 val normalize_term :
   strong:bool -> checker -> Nucleus.signature -> Nucleus.is_term -> Nucleus.eq_term * Nucleus.is_term
 
-type eqchk_error
+(* type eqchk_error
 
 exception EqchkError of eqchk_error
 
-(** Print a nucleus error *)
-val print_error : penv:Nucleus_types.print_environment -> eqchk_error -> Format.formatter -> unit
+(** Print an eqchk error *)
+val print_error : penv:Nucleus_types.print_environment -> eqchk_error -> Format.formatter -> unit *)

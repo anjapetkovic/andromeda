@@ -5,7 +5,7 @@ open Eqchk_common
 (** Extract an optional value, or declare an equality failure *)
 let deopt x msg =
   match x with
-  | None -> raise (EqchkError (Normalization_fail msg))
+  | None -> raise (Fatal_error (Normalization_fail ( General msg)))
   | Some x -> x
 
 (** The types of beta rules. *)
@@ -336,7 +336,7 @@ and normalize_argument ~strong sgn nrm arg =
      Normal (Nucleus.(abstract_not_abstract (JudgementIsTerm e')))
 
   | Nucleus.(Stump_NotAbstract (JudgementEqType _ | JudgementEqTerm _)) ->
-     raise (EqchkError (Normalization_fail "cannot normalize equality judgements"))
+     raise (Fatal_error (Normalization_fail (General "cannot normalize equality judgements")))
 
 and normalize_is_terms ~strong sgn nrm heads es =
   let rec fold k es' es_eq_es' = function

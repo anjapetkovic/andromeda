@@ -43,6 +43,7 @@ type symbol =
   | Ident of Ident.t
   | Nonce of Nonce.t
 
+(** Reporting Equality Checker errors. *)
 type invalid_rule =
   | WrongMetavariable of int * int
   | BoundMetavariableExpected of int * (Nucleus_types.is_term)
@@ -58,15 +59,25 @@ type invalid_rule =
   | TypeEqualityConclusionExpected
   | TermEqualityConclusionExpected
 
+type equality_fail =
+  | NoCongruenceTypes of Nucleus.is_type * Nucleus.is_type
+  | NoCongruenceTerms of Nucleus.is_term * Nucleus.is_term
+
 type eqchk_error =
   | Invalid_rule of invalid_rule
-  | Normalization_fail of string
-  | Equality_fail of string
+  | Equality_fail of equality_fail
+
+type normalization_error =
+  | General of string
+
+type fatal_error =
+  | Normalization_fail of normalization_error
+  | Fatal of string
 exception EqchkError of eqchk_error
 
-exception Fatal_error of string
+exception Fatal_error of fatal_error
 
-let print_error ~penv err ppf =
+let print_eqchk_error ~penv err ppf =
   match err with
   | Invalid_rule e ->
     begin
@@ -110,8 +121,15 @@ let print_error ~penv err ppf =
       Format.fprintf ppf "Conclusion not a type equality boundary"
 
     end
-  | Normalization_fail s -> Format.fprintf ppf "%s" s
-  | Equality_fail s -> Format.fprintf ppf "%s" s
+  | Equality_fail (NoCongruenceTypes (ty1, ty2)) ->
+    Format.fprintf ppf "Cannot find a congruence rule for types %t and %t"
+    Nucleus_print.(thesis_is_type ~penv (Nucleus.expose_is_type ty1))
+    Nucleus_print.(thesis_is_type ~penv (Nucleus.expose_is_type ty2))
+
+  | Equality_fail (NoCongruenceTerms (e1, e2)) ->
+    Format.fprintf ppf "Cannot find a congruence rule for terms %t and %t"
+    Nucleus_print.(thesis_is_term ~penv (Nucleus.expose_is_term e1))
+    Nucleus_print.(thesis_is_term ~penv (Nucleus.expose_is_term e2))
 
 (** A tag to indicate that a term or a type is normalized *)
 type 'a normal = Normal of 'a
@@ -147,7 +165,7 @@ let head_symbol_term e =
     | Nucleus_types.(TermAtom {atom_nonce=n; _}) -> Nonce n
     | Nucleus_types.TermConstructor (c, _) -> Ident c
     | Nucleus_types.(TermMeta (MetaFree {meta_nonce;_}, _)) -> Nonce meta_nonce
-    | Nucleus_types.(TermMeta (MetaBound _, _)) -> raise (Fatal_error "head symbol of a bound term metavariable does not exist")
+    | Nucleus_types.(TermMeta (MetaBound _, _)) -> raise (Fatal_error (Fatal "head symbol of a bound term metavariable does not exist"))
     | Nucleus_types.TermConvert (e, _, _) -> fold e
   in
   fold e
@@ -157,7 +175,7 @@ let head_symbol_term e =
 let head_symbol_type = function
   | Nucleus_types.TypeConstructor (c, _) -> Ident c
   | Nucleus_types.(TypeMeta (MetaFree {meta_nonce=n;_}, _)) -> Nonce n
-  | Nucleus_types.(TypeMeta (MetaBound _, _)) -> raise (Fatal_error "head symbol of a bound type metavariable does not exist")
+  | Nucleus_types.(TypeMeta (MetaBound _, _)) -> raise (Fatal_error (Fatal"head symbol of a bound type metavariable does not exist"))
 
 (** Apply rap to a list of arguments *)
 let rap_apply rap args =
@@ -165,7 +183,7 @@ let rap_apply rap args =
   match rap, args with
   | rap, [] -> rap
   | Nucleus.RapMore (_bdry, f), arg :: args -> fold (f arg) args
-  | Nucleus.RapDone _, _::_ -> raise (Fatal_error "Applying the rule to too many arguments")
+  | Nucleus.RapDone _, _::_ -> raise (Fatal_error (Fatal "Applying the rule to too many arguments"))
   in
   try
     Some (fold rap args)
@@ -178,8 +196,8 @@ let rap_fully_apply rap args =
   match rap, args with
   | Nucleus.RapDone jdg, [] -> jdg
   | Nucleus.RapMore (_bdry, f), arg :: args -> fold (f arg) args
-  | Nucleus.RapDone _, _::_ -> raise (Fatal_error "Applying the rule to too many arguments")
-  | Nucleus.RapMore _, [] -> raise (Fatal_error "Applying the rule to too few arguments")
+  | Nucleus.RapDone _, _::_ -> raise (Fatal_error (Fatal "Applying the rule to too many arguments"))
+  | Nucleus.RapMore _, [] -> raise (Fatal_error ( Fatal "Applying the rule to too few arguments"))
   in
   try
     Some (fold rap args)

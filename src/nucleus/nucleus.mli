@@ -133,6 +133,7 @@ val expose_eq_type : eq_type -> Nucleus_types.eq_type
 val expose_eq_term : eq_term -> Nucleus_types.eq_term
 val expose_judgement : judgement -> Nucleus_types.judgement
 val expose_rule : 'a rule -> 'a Nucleus_types.rule
+val expose_penv : print_environment -> Nucleus_types.print_environment
 
 (** When we apply a rule application to one more argument two things may happen.
    Either we are done and we get a result, or more arguments are needed, in

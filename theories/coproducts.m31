@@ -1,0 +1,34 @@
+require eq
+;;
+
+rule coprod (A type) (B type) type
+;;
+
+rule inl (A type) (B type) (a : A) : coprod A B
+;;
+
+rule inr (A type) (B type) (b : B) : coprod A B
+;;
+
+rule ind_coprod
+(A type) (B type) ({_ : coprod A B} C type) ({a : A} f : C {inl A B a}) ({b : B} g : C {inr A B b}) (x : coprod A B) : C {x}
+;;
+
+rule comp_inl_coprod
+(A type) (B type) ({x : coprod A B} C type) ({a : A} f : C {inl A B a})
+({b : B} g : C {inr A B b}) (a : A)
+: ind_coprod A B C f g (inl A B a) ≡ f {a} : C {inl A B a}
+;;
+
+rule comp_inr_coprod
+(A type) (B type) ({x : coprod A B} C type)
+({a : A} f : C {inl A B a}) ({b : B} g : C {inr A B b}) (b : B)
+: ind_coprod A B C f g (inr A B b) ≡ g {b} : C {inr A B b}
+;;
+
+eq.add_rule comp_inl_coprod
+;;
+eq.add_rule comp_inr_coprod
+;;
+
+

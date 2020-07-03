@@ -36,7 +36,8 @@ let add_rule der =
   ch := ch'
 ;;
 
-exception Coerce_fail ;;
+exception Coerce_fail of judgement * boundary ;;
+exception Equal_type_fail of judgement * judgement ;;
 
 let equalize_type A B = prove_eqtype_abstraction !ch (A ≡ B by ??) ;;
 
@@ -61,7 +62,18 @@ let coerce_abstraction jdg bdry =
 
 (** Install a global equality checker *)
 with
-| operation ML.coerce ?jdg ?bdry -> coerce_abstraction jdg bdry
+| operation ML.coerce ?jdg ?bdry ->
+  try
+    coerce_abstraction jdg bdry
+  with
+    | raise ML.EqualityCheckerException _ -> raise (Coerce_fail (jdg, bdry))
+  end
+| operation ML.equal_type ?t1 ?t2 ->
+  try
+    equalize_type t1 t2
+  with
+  | raise ML.EqualityCheckerException _ -> raise (Equal_type_fail (t1,t2))
+  end
 end ;;
 
 let normalize jdg =

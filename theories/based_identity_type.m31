@@ -1,0 +1,16 @@
+require eq ;;
+
+rule Id (A type) (a : A) (x : A) type ;;
+
+rule refl (A type) (a : A) : Id A a a ;;
+
+rule ind_Id
+     (A type) (a : A) ({x : A} {p : Id A a x} B type) (b : B {a} {refl A a})
+     (x : A) (p : Id A a x) :
+     B {x} {p} ;;
+
+rule comp_Id
+  (A type) (a : A) ({x : A} {p : Id A a x} B type) (b : B {a} {refl A a}) :
+  ind_Id A a B b a (refl A a) ≡ b : B {a} {refl A a} ;;
+
+eq.add_rule comp_Id ;;

@@ -1,0 +1,26 @@
+require eq ;;
+
+rule bool type
+;;
+
+rule true : bool
+;;
+rule false : bool
+;;
+
+rule ind_bool ({x : bool} P type) (t : P {true}) (f : P {false}) (x : bool)
+  : P {x}
+;;
+
+rule comp_true_bool ({x : bool} P type) (t : P {true}) (f : P {false}) :
+ind_bool P t f true ≡ t : P {true}
+;;
+eq.add_rule comp_true_bool
+;;
+
+rule comp_false_bool ({x : bool} P type) (t : P {true}) (f : P {false}) :
+ind_bool P t f false ≡ f : P {false}
+;;
+eq.add_rule comp_false_bool
+;;
+

@@ -1,0 +1,79 @@
+require eq ;;
+
+require coproducts ;;
+open coproducts ;;
+
+require nat ;;
+open nat ;;
+
+require unit ;;
+open unit ;;
+
+
+rule ℤ type
+;;
+rule ℤ_def : ℤ ≡ coprod ℕ (coprod unit ℕ)
+;;
+eq.add_rule (derive -> ℤ_def)
+;;
+
+rule zero_ℤ : ℤ
+;;
+rule zero_ℤ_def : zero_ℤ ≡ inr ℕ (coprod unit ℕ) (inl unit ℕ tt) : ℤ
+;;
+eq.add_rule (derive -> zero_ℤ_def)
+;;
+
+rule in_pos (n : ℕ) : ℤ
+;;
+rule in_pos_def (n : ℕ) : in_pos n ≡ inr ℕ (coprod unit ℕ) (inr unit ℕ n) : ℤ
+;;
+eq.add_rule in_pos_def
+;;
+
+rule in_neg (n : ℕ) : ℤ
+;;
+rule in_neg_def (n : ℕ) : in_neg n ≡ inl ℕ (coprod unit ℕ) n : ℤ
+;;
+eq.add_rule in_neg_def
+;;
+
+rule int_ℕ (n : ℕ) : ℤ
+;;
+rule int_ℕ_def (n : ℕ)
+ : int_ℕ n ≡ ℕ_ind ({x : ℕ} ℤ) zero_ℤ ({m : ℕ} {x : ℤ} (in_pos m)) n : ℤ
+;;
+
+rule neg_one_ℤ : ℤ
+;;
+rule neg_one_ℤ_def : neg_one_ℤ ≡ in_neg z : ℤ
+;;
+eq.add_rule (derive -> neg_one_ℤ_def)
+;;
+
+rule one_ℤ : ℤ
+;;
+rule one_ℤ_def : one_ℤ ≡ in_pos z : ℤ
+;;
+eq.add_rule (derive -> one_ℤ_def)
+;;
+
+
+let ind_ℤ = derive
+  ({x : ℤ} P type)
+  (t_neg_one_ℤ : P {neg_one_ℤ})
+  ({n : ℕ} {x : P {in_neg n}} f : P {in_neg (s n)})
+  (t_zero_ℤ : P {zero_ℤ})
+  (t_one_ℤ : P {one_ℤ})
+  ({n : ℕ} {x : P {in_pos n}} g : P {in_pos (s n)})
+  (k : ℤ)
+  ->
+  ind_coprod ℕ (coprod unit ℕ) ({x} P {x})
+  ({x} ℕ_ind ({n : ℕ} P {in_neg n}) (t_neg_one_ℤ) ({y : ℕ} {y' : P {in_neg y}} f {y} {y'}) (x))
+  ({y} ind_coprod unit ℕ ( {x : coprod unit ℕ} P {inr ℕ (coprod unit ℕ) x})
+    ({a : unit} unit_ind ({u} P {inr ℕ (coprod unit ℕ) (inl unit ℕ u)}) t_zero_ℤ a)
+    ({m : ℕ} ℕ_ind ({w : ℕ} P {inr ℕ (coprod unit ℕ) (inr unit ℕ w)}) (t_one_ℤ) ({y' : ℕ} {y'' : P {in_pos y'}} g {y'} {y''}) m)
+    y)
+  (k)
+  : P {k}
+  ;;
